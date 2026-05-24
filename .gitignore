@@ -1,0 +1,43 @@
+# Secrets — never commit
+.env
+.env.local
+
+# Local plan notes (not for the repo)
+resume_job_matcher_mvp*
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and local test artifacts
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
