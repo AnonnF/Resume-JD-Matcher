@@ -32,14 +32,18 @@ def get_api_key() -> str | None:
         return None
     return key
 
-def generate_match_report(resume_text: str, job_description: str) -> str:
-    api_key = get_api_key()
-    if not api_key:
+def generate_match_report(
+    resume_text: str, job_description: str, api_key: str | None = None
+) -> str:
+    # Use user-provided key first, then fall back to server-side secrets / env
+    effective_key = api_key or get_api_key()
+    if not effective_key:
         raise MissingAPIKeyError(
-            "DEEPSEEK_API_KEY is not set. Set it in .env (local) or Streamlit Cloud Secrets."
+            "No API key configured. Enter your DeepSeek API key in the sidebar, "
+            "or set DEEPSEEK_API_KEY on the server."
         )
-    
-    client = OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
+
+    client = OpenAI(api_key=effective_key, base_url=DEEPSEEK_BASE_URL)
 
     try:
         response = client.chat.completions.create(
@@ -53,7 +57,7 @@ def generate_match_report(resume_text: str, job_description: str) -> str:
             extra_body={"thinking": {"type": "disabled"}}
         )
     except AuthenticationError as e:
-        raise LLMError("Invalid API key. Check DEEPSEEK_API_KEY in your .env file.") from e
+        raise LLMError("Invalid API key. Check that you entered a valid DeepSeek API key.") from e
     except RateLimitError as e:
         raise LLMError("Rate limit exceeded. Please try again in a few minutes.") from e
     except APIError as e:

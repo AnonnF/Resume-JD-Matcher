@@ -16,12 +16,17 @@ st.caption("Upload your resume and paste a job description to get a tailored mat
 with st.sidebar:
     st.header("Setup")
     st.markdown(
-        "Set `DEEPSEEK_API_KEY` in one of the following:\n\n"
-        "- **Local:** `.env` file (copy from `.env.example`)\n"
-        "- **Streamlit Cloud:** [Secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management) → `DEEPSEEK_API_KEY`"
+        "This tool uses the [DeepSeek API](https://api-docs.deepseek.com/). "
+        "Enter your own API key below — get one for free at "
+        "[platform.deepseek.com](https://platform.deepseek.com/api_keys)."
     )
-    if not get_api_key():
-        st.warning("API key missing. See the instructions above to configure it.")
+    user_api_key = st.text_input(
+        "DeepSeek API Key",
+        type="password",
+        placeholder="sk-...",
+        help="Your key is only used this session and never stored.",
+    )
+    st.caption("No key on hand? The server may provide a fallback if configured.")
 
 uploaded_file = st.file_uploader("Upload your resume (PDF)", type=["pdf"])
 job_description = st.text_area("Paste the job description", height=200)
@@ -37,19 +42,22 @@ if analyze_clicked:
         st.error("Please paste a job description before analyzing.")
         st.stop()
     
-    if not get_api_key():
-        st.error("DEEPSEEK_API_KEY is not set. Set it in .env (local) or Streamlit Cloud Secrets.")
+    if not user_api_key and not get_api_key():
+        st.error(
+            "No API key configured. Enter your DeepSeek API key in the sidebar, "
+            "or set DEEPSEEK_API_KEY on the server."
+        )
         st.stop()
-    
+
     try:
         resume_text = extract_text_from_pdf(uploaded_file.read())
     except PDFExtractionError as e:
         st.error(str(e))
         st.stop()
-    
+
     with st.spinner("Analyzing resume against job description..."):
         try:
-            report = generate_match_report(resume_text, jd)
+            report = generate_match_report(resume_text, jd, api_key=user_api_key or None)
         except MissingAPIKeyError as e:
             st.error(str(e))
             st.stop()
