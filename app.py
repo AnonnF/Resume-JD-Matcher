@@ -15,9 +15,13 @@ st.caption("Upload your resume and paste a job description to get a tailored mat
 
 with st.sidebar:
     st.header("Setup")
-    st.markdown("Set `DEEPSEEK_API_KEY` in your `.env` file.")
+    st.markdown(
+        "Set `DEEPSEEK_API_KEY` in one of the following:\n\n"
+        "- **Local:** `.env` file (copy from `.env.example`)\n"
+        "- **Streamlit Cloud:** [Secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management) → `DEEPSEEK_API_KEY`"
+    )
     if not get_api_key():
-        st.warning("API key missing. Copy `.env.example` to `.env` and add your key.")
+        st.warning("API key missing. See the instructions above to configure it.")
 
 uploaded_file = st.file_uploader("Upload your resume (PDF)", type=["pdf"])
 job_description = st.text_area("Paste the job description", height=200)
@@ -34,7 +38,7 @@ if analyze_clicked:
         st.stop()
     
     if not get_api_key():
-        st.error("DEEPSEEK_API_KEY is not set. Copy .env.example to .env and add your key.")
+        st.error("DEEPSEEK_API_KEY is not set. Set it in .env (local) or Streamlit Cloud Secrets.")
         st.stop()
     
     try:

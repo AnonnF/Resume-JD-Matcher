@@ -17,6 +17,16 @@ class MissingAPIKeyError(Exception):
     """Raised when DEEPSEEK_API_KEY is missing or still the placeholder."""
 
 def get_api_key() -> str | None:
+    # Try Streamlit secrets first (for Streamlit Cloud deployment)
+    try:
+        import streamlit as st
+        key = st.secrets.get("DEEPSEEK_API_KEY", None)
+        if key and key.strip() != "" and key != "your_api_key_here":
+            return key
+    except (ImportError, AttributeError):
+        pass
+
+    # Fall back to environment variable (for local dev with .env)
     key = os.getenv("DEEPSEEK_API_KEY")
     if not key or key.strip() == "" or key == "your_api_key_here":
         return None
@@ -26,7 +36,7 @@ def generate_match_report(resume_text: str, job_description: str) -> str:
     api_key = get_api_key()
     if not api_key:
         raise MissingAPIKeyError(
-            "DEEPSEEK_API_KEY is not set. Copy .env.example to .env and add your key."
+            "DEEPSEEK_API_KEY is not set. Set it in .env (local) or Streamlit Cloud Secrets."
         )
     
     client = OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
